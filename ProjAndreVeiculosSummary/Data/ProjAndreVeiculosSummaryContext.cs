@@ -15,5 +15,7 @@ namespace ProjAndreVeiculosSummary.Data
         }
 
         public DbSet<Models.Customer> Customer { get; set; } = default!;
+
+        public DbSet<Models.Address>? Address { get; set; }
     }
 }

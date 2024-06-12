@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Models;
 using ProjAndreVeiculosSummary.Data;
+using ProjAndreVeiculosSummary.Services;
 
 namespace ProjAndreVeiculosSummary.Controllers
 {
@@ -15,10 +16,12 @@ namespace ProjAndreVeiculosSummary.Controllers
     public class CustomersController : ControllerBase
     {
         private readonly ProjAndreVeiculosSummaryContext _context;
+        private readonly BankService _bankService;
 
-        public CustomersController(ProjAndreVeiculosSummaryContext context)
+        public CustomersController(ProjAndreVeiculosSummaryContext context, BankService bankService)
         {
             _context = context;
+            _bankService = bankService;
         }
 
         // GET: api/Customers
@@ -29,7 +32,9 @@ namespace ProjAndreVeiculosSummary.Controllers
           {
               return NotFound();
           }
-            return await _context.Customer.ToListAsync();
+            return await _context.Customer.Include(c => c.Address)
+                                          .Include(c => c.Bank)
+                                          .ToListAsync();
         }
 
         // GET: api/Customers/5
@@ -90,6 +95,11 @@ namespace ProjAndreVeiculosSummary.Controllers
           {
               return Problem("Entity set 'ProjAndreVeiculosSummaryContext.Customer'  is null.");
           }
+
+            // Inserir o banco no MongoDB
+            Bank bank = _bankService.PostBank(customer.Bank).Result;
+            customer.Bank = bank;
+
             _context.Customer.Add(customer);
             await _context.SaveChangesAsync();
 
